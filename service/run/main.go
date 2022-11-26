@@ -1,10 +1,10 @@
 package main
 
+import "C"
 import (
 	"context"
 	"fmt"
 	"github.com/kardianos/service"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"log"
 	"net"
@@ -41,26 +41,39 @@ func (srv *services) Stop(s service.Service) error {
 	return srv.srv.Shutdown(context.Background())
 }
 
-func readFile(str string) {
-	log.Printf("read file %s", str)
-	conf := Config()
-	res := conf.GetString("test.123")
-	log.Printf("load conf %s", res)
+func readFile(str *C.char) {
+	log.Println(C.GoString(str))
 }
 
 func loadConf() {
 	LoadNewConfigFile("E:\\GolandProject\\CGO\\service\\run\\conf.ini")
 }
 
+//export search
+func search(str *C.char) *C.char {
+	log.Println(C.GoString(str))
+	conf := Config()
+	res := conf.GetString("test.123")
+	log.Printf("load conf %s", res)
+	return str
+}
+
 func main() {
 
-	fFile := pflag.StringP("file", "F", "", "file to read, just test to load the certificate file")
-	pflag.Parse()
+}
 
-	if len(*fFile) > 0 {
-		readFile(*fFile)
-		return
+//export command
+func command(str *C.char) {
+	//fFile := pflag.StringP("file", "F", "", "file to read, just test to load the certificate file")
+	//pflag.Parse()
+
+	if C.GoString(str) != "" {
+		readFile(str)
 	}
+	//if len(*fFile) > 0 {
+	//	readFile(*fFile)
+	//	return
+	//}
 
 	File, err := os.Create("http-server.log")
 	if err != nil {
@@ -111,10 +124,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Run programe error:%s\n", err.Error())
 	}
-}
-
-func command() {
-
 }
 
 const (
