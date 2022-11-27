@@ -19,6 +19,14 @@ typedef struct { const char *p; ptrdiff_t n; } _GoString_;
 /* Start of preamble from import "C" comments.  */
 
 
+#line 3 "main.go"
+
+struct Vertex {
+    int X;
+    int Y;
+};
+
+#line 1 "cgo-generated-wrapper"
 
 
 /* End of preamble from import "C" comments.  */
@@ -74,8 +82,9 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
-extern __declspec(dllexport) char* search(char* str);
-extern __declspec(dllexport) void command(char* str);
+extern void loadConf();
+extern char* search(char* str);
+extern void command(char* str);
 
 #ifdef __cplusplus
 }

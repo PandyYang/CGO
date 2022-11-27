@@ -1,16 +1,30 @@
 package main
 
+/*
+struct Vertex {
+    int X;
+    int Y;
+};
+*/
 import "C"
 import (
 	"context"
 	"fmt"
-	"github.com/kardianos/service"
-	"github.com/spf13/viper"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
+	"time"
+
+	"github.com/kardianos/service"
+	"github.com/spf13/viper"
+)
+
+var (
+	globalConfig string
 )
 
 type services struct {
@@ -45,16 +59,16 @@ func readFile(str *C.char) {
 	log.Println(C.GoString(str))
 }
 
+//export loadConf
 func loadConf() {
-	LoadNewConfigFile("E:\\GolandProject\\CGO\\service\\run\\conf.ini")
+	LoadNewConfigFile("/root/goProject/src/CGO/service/run/conf.ini")
 }
 
 //export search
 func search(str *C.char) *C.char {
 	log.Println(C.GoString(str))
-	conf := Config()
-	res := conf.GetString("test.123")
-	log.Printf("load conf %s", res)
+	res := globalConfig.GetString("123.key")
+	log.Printf(res)
 	return str
 }
 
@@ -62,8 +76,27 @@ func main() {
 
 }
 
+func forever() {
+	v := "global value"
+	globalConfig = v
+	for {
+		fmt.Printf("%v+\n", time.Now())
+		time.Sleep(10 * time.Second)
+		fmt.Println(globalConfig.GetString("123.key"))
+	}
+}
+
 //export command
 func command(str *C.char) {
+
+	go forever()
+
+	quitChannel := make(chan os.Signal, 1)
+	signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM)
+	<-quitChannel
+	//time for cleanup before exit
+	fmt.Println("Adios!")
+
 	//fFile := pflag.StringP("file", "F", "", "file to read, just test to load the certificate file")
 	//pflag.Parse()
 
@@ -213,6 +246,12 @@ func SetDefaultConfig(defaults map[string]interface{}) error {
 }
 
 func LoadNewConfigFile(path string) *viper.Viper {
+
+	if defaultConfigInstance != nil {
+		return defaultConfigInstance
+	}
+
+	fmt.Println("init conf")
 
 	var v = viper.New()
 	v.SetConfigFile(path)
