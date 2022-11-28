@@ -27,7 +27,7 @@ func MyGoPrint(context unsafe.Pointer) {
 	val := h.Value().(Config)
 	println(val.Name)
 	println(val.Age)
-	h.Delete()
+	//h.Delete()
 }
 
 //export initConf
@@ -64,8 +64,13 @@ func main() {
 
 	val := c
 	h := cgo.NewHandle(val)
-	C.myprint(unsafe.Pointer(&h))
-	// Output: hello Go
+	for i := 0; i < 1000000; i++ {
+		C.myprint(unsafe.Pointer(&h))
+		// Output: hello Go
+	}
+
+	h.Delete()
+
 }
 
 func LoadNewConfigFile(path string) *viper.Viper {
